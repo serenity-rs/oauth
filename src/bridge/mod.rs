@@ -4,3 +4,4 @@
 //! functions that create one-off clients for ease of use.
 
 pub mod hyper;
+pub mod reqwest;

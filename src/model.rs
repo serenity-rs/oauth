@@ -1,7 +1,7 @@
 //! A collection of models that can be deserialized from response bodies and
 //! serialized into request bodies.
 
-use serenity_model::{PartialGuild, Webhook};
+use serenity::model::prelude::{PartialGuild, Webhook};
 
 /// Structure of data used as the body of a request to exchange the [`code`] for
 /// an access token.
@@ -45,12 +45,12 @@ impl AccessTokenExchangeRequest {
     ///
     /// assert_eq!(request.grant_type, "authorization_code");
     /// ```
-    pub fn new<S, T, U>(
-        client_id: u64,
-        client_secret: S,
-        code: T,
-        redirect_uri: U,
-    ) -> Self where S: Into<String>, T: Into<String>, U: Into<String> {
+    pub fn new<S, T, U>(client_id: u64, client_secret: S, code: T, redirect_uri: U) -> Self
+    where
+        S: Into<String>,
+        T: Into<String>,
+        U: Into<String>,
+    {
         Self {
             client_secret: client_secret.into(),
             code: code.into(),
@@ -156,12 +156,12 @@ impl RefreshTokenRequest {
     ///
     /// assert_eq!(request.grant_type, "refresh_token");
     /// ```
-    pub fn new<S, T, U>(
-        client_id: u64,
-        client_secret: S,
-        redirect_uri: T,
-        refresh_token: U,
-    ) -> Self where S: Into<String>, T: Into<String>, U: Into<String> {
+    pub fn new<S, T, U>(client_id: u64, client_secret: S, redirect_uri: T, refresh_token: U) -> Self
+    where
+        S: Into<String>,
+        T: Into<String>,
+        U: Into<String>,
+    {
         Self {
             client_secret: client_secret.into(),
             grant_type: "refresh_token".to_owned(),

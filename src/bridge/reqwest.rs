@@ -1,19 +1,16 @@
-//! Bridged support for the `hyper` HTTP client.
-
-use hyper::client::{Client as HyperClient, Body};
-use hyper::header::ContentType;
-use serde_json;
-use serde_urlencoded;
+//! Bridged support for the `reqwest` HTTP client.
 use crate::constants::BASE_TOKEN_URI;
-use crate::model::{
-    AccessTokenExchangeRequest,
-    AccessTokenResponse,
-    RefreshTokenRequest,
-};
-use crate::Result;
+use crate::model::{AccessTokenExchangeRequest, AccessTokenResponse, RefreshTokenRequest};
+use crate::{Error, Result};
+use reqwest::blocking::Client as ReqwestClient;
+use reqwest::header::CONTENT_TYPE;
+use serde_json;
+use serde_json::Error as JsonError;
+use serde_urlencoded;
 
+// TODO Update this
 /// A trait used that implements methods for interacting with Discord's OAuth2
-/// API on Hyper's client.
+/// API on Reqwest's client.
 ///
 /// # Examples
 ///
@@ -40,7 +37,7 @@ use crate::Result;
 ///
 /// For examples of how to use the trait with the Client, refer to the trait's
 /// methods.
-pub trait DiscordOAuthHyperRequester {
+pub trait DiscordOAuthReqwestRequester {
     /// Exchanges a code for the user's access token.
     ///
     /// # Examples
@@ -76,8 +73,7 @@ pub trait DiscordOAuthHyperRequester {
     /// #     try_main().unwrap();
     /// # }
     /// ```
-    fn exchange_code(&self, request: &AccessTokenExchangeRequest)
-        -> Result<AccessTokenResponse>;
+    fn exchange_code(&self, request: &AccessTokenExchangeRequest) -> Result<AccessTokenResponse>;
 
     /// Exchanges a refresh token, returning a new refresh token and fresh
     /// access token.
@@ -115,31 +111,29 @@ pub trait DiscordOAuthHyperRequester {
     /// #     try_main().unwrap();
     /// # }
     /// ```
-    fn exchange_refresh_token(&self, request: &RefreshTokenRequest)
-        -> Result<AccessTokenResponse>;
+    fn exchange_refresh_token(&self, request: &RefreshTokenRequest) -> Result<AccessTokenResponse>;
 }
 
-impl DiscordOAuthHyperRequester for HyperClient {
-    fn exchange_code(&self, request: &AccessTokenExchangeRequest)
-        -> Result<AccessTokenResponse> {
+impl DiscordOAuthReqwestRequester for ReqwestClient {
+    fn exchange_code(&self, request: &AccessTokenExchangeRequest) -> Result<AccessTokenResponse> {
         let body = serde_urlencoded::to_string(request)?;
 
-        let response = self.post(BASE_TOKEN_URI)
-            .header(ContentType::form_url_encoded())
-            .body(Body::BufBody(body.as_bytes(), body.len()))
+        let response = sel
+            .post(BASE_TOKEN_URI)
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .body(body)
             .send()?;
+        let body = response.text().unwrap();
 
-        serde_json::from_reader(response).map_err(From::from)
+        serde_json::from_str(&*body).map_err(From::from)
     }
 
-    fn exchange_refresh_token(&self, request: &RefreshTokenRequest)
-        -> Result<AccessTokenResponse> {
+    fn exchange_refresh_token(&self, request: &RefreshTokenRequest) -> Result<AccessTokenResponse> {
         let body = serde_json::to_string(request)?;
 
-        let response = self.post(BASE_TOKEN_URI)
-            .body(Body::BufBody(body.as_bytes(), body.len()))
-            .send()?;
+        let response = self.post(BASE_TOKEN_URI).body(body).send()?;
+        let body = response.text().unwrap();
 
-        serde_json::from_reader(response).map_err(From::from)
+        serde_json::from_str(&*body).map_err(From::from)
     }
 }
