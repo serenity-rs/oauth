@@ -1,16 +1,12 @@
 //! Bridged support for the `hyper` HTTP client.
 
-use hyper::client::{Client as HyperClient, Body};
+use crate::constants::BASE_TOKEN_URI;
+use crate::model::{AccessTokenExchangeRequest, AccessTokenResponse, RefreshTokenRequest};
+use crate::Result;
+use hyper::client::{Body, Client as HyperClient};
 use hyper::header::ContentType;
 use serde_json;
 use serde_urlencoded;
-use crate::constants::BASE_TOKEN_URI;
-use crate::model::{
-    AccessTokenExchangeRequest,
-    AccessTokenResponse,
-    RefreshTokenRequest,
-};
-use crate::Result;
 
 /// A trait used that implements methods for interacting with Discord's OAuth2
 /// API on Hyper's client.
@@ -48,12 +44,9 @@ pub trait DiscordOAuthHyperRequester {
     /// Exchange a code for an access token:
     ///
     /// ```rust,no_run
-    /// extern crate hyper;
-    /// extern crate serenity_oauth;
-    ///
     /// # use std::error::Error;
     /// #
-    /// # fn try_main() -> Result<(), Box<Error>> {
+    /// # fn try_main() -> Result<(), Box<dyn Error>> {
     /// use hyper::Client;
     /// use serenity_oauth::model::AccessTokenExchangeRequest;
     /// use serenity_oauth::DiscordOAuthHyperRequester;
@@ -76,8 +69,7 @@ pub trait DiscordOAuthHyperRequester {
     /// #     try_main().unwrap();
     /// # }
     /// ```
-    fn exchange_code(&self, request: &AccessTokenExchangeRequest)
-        -> Result<AccessTokenResponse>;
+    fn exchange_code(&self, request: &AccessTokenExchangeRequest) -> Result<AccessTokenResponse>;
 
     /// Exchanges a refresh token, returning a new refresh token and fresh
     /// access token.
@@ -87,8 +79,6 @@ pub trait DiscordOAuthHyperRequester {
     /// Exchange a refresh token:
     ///
     /// ```rust,no_run
-    /// extern crate hyper;
-    /// extern crate serenity_oauth;
     ///
     /// # use std::error::Error;
     /// #
@@ -115,16 +105,15 @@ pub trait DiscordOAuthHyperRequester {
     /// #     try_main().unwrap();
     /// # }
     /// ```
-    fn exchange_refresh_token(&self, request: &RefreshTokenRequest)
-        -> Result<AccessTokenResponse>;
+    fn exchange_refresh_token(&self, request: &RefreshTokenRequest) -> Result<AccessTokenResponse>;
 }
 
 impl DiscordOAuthHyperRequester for HyperClient {
-    fn exchange_code(&self, request: &AccessTokenExchangeRequest)
-        -> Result<AccessTokenResponse> {
+    fn exchange_code(&self, request: &AccessTokenExchangeRequest) -> Result<AccessTokenResponse> {
         let body = serde_urlencoded::to_string(request)?;
 
-        let response = self.post(BASE_TOKEN_URI)
+        let response = self
+            .post(BASE_TOKEN_URI)
             .header(ContentType::form_url_encoded())
             .body(Body::BufBody(body.as_bytes(), body.len()))
             .send()?;
@@ -132,11 +121,11 @@ impl DiscordOAuthHyperRequester for HyperClient {
         serde_json::from_reader(response).map_err(From::from)
     }
 
-    fn exchange_refresh_token(&self, request: &RefreshTokenRequest)
-        -> Result<AccessTokenResponse> {
+    fn exchange_refresh_token(&self, request: &RefreshTokenRequest) -> Result<AccessTokenResponse> {
         let body = serde_json::to_string(request)?;
 
-        let response = self.post(BASE_TOKEN_URI)
+        let response = self
+            .post(BASE_TOKEN_URI)
             .body(Body::BufBody(body.as_bytes(), body.len()))
             .send()?;
 

@@ -45,15 +45,12 @@ pub trait DiscordOAuthReqwestRequester {
     /// Exchange a code for an access token:
     ///
     /// ```rust,no_run
-    /// extern crate hyper;
-    /// extern crate serenity_oauth;
-    ///
     /// # use std::error::Error;
     /// #
-    /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use hyper::Client;
+    /// # fn try_main() -> Result<(), Box<dyn Error>> {
+    /// use reqwest::blocking::Client;
     /// use serenity_oauth::model::AccessTokenExchangeRequest;
-    /// use serenity_oauth::DiscordOAuthHyperRequester;
+    /// use serenity_oauth::DiscordOAuthReqwestRequester;
     ///
     /// let request_data = AccessTokenExchangeRequest::new(
     ///     249608697955745802,
@@ -83,15 +80,12 @@ pub trait DiscordOAuthReqwestRequester {
     /// Exchange a refresh token:
     ///
     /// ```rust,no_run
-    /// extern crate hyper;
-    /// extern crate serenity_oauth;
-    ///
     /// # use std::error::Error;
     /// #
-    /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use hyper::Client;
+    /// # fn try_main() -> Result<(), Box<dyn Error>> {
+    /// use reqwest::blocking::Client;
     /// use serenity_oauth::model::RefreshTokenRequest;
-    /// use serenity_oauth::DiscordOAuthHyperRequester;
+    /// use serenity_oauth::DiscordOAuthReqwestRequester;
     ///
     /// let request_data = RefreshTokenRequest::new(
     ///     249608697955745802,
