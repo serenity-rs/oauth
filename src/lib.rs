@@ -1,4 +1,3 @@
-#![warn(missing_docs)]
 //! # serenity-oauth
 //!
 //! `serenity-oauth` is a collection of HTTP library support bridges for
@@ -39,3 +38,11 @@ pub use bridge::hyper::DiscordOAuthHyperRequester;
 pub use bridge::reqwest::DiscordOAuthReqwestRequester;
 pub use error::{Error, Result};
 pub use scope::Scope;
+
+#[allow(missing_docs)]
+pub mod prelude {
+    pub use crate::bridge::hyper::DiscordOAuthHyperRequester;
+    pub use crate::bridge::reqwest::DiscordOAuthReqwestRequester;
+    pub use crate::model::*;
+    pub use crate::scope::Scope;
+}

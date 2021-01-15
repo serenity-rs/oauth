@@ -18,17 +18,14 @@ use serde_urlencoded;
 /// the instance of hyper's Client will have those methods available:
 ///
 /// ```rust,no_run
-/// extern crate hyper;
-/// extern crate serenity_oauth;
-///
 /// # fn main() {
-/// use hyper::Client;
+/// use reqwest::blocking::Client;
 ///
 /// let client = Client::new();
 ///
 /// // At this point, the methods defined by the trait are not in scope. By
 /// // using the trait, they will be.
-/// use serenity_oauth::DiscordOAuthHyperRequester;
+/// use serenity_oauth::DiscordOAuthReqwestRequester;
 ///
 /// // The methods defined by `DiscordOAuthHyperRequester` are now in scope and
 /// // implemented on the instance of hyper's `Client`.
@@ -112,7 +109,7 @@ impl DiscordOAuthReqwestRequester for ReqwestClient {
     fn exchange_code(&self, request: &AccessTokenExchangeRequest) -> Result<AccessTokenResponse> {
         let body = serde_urlencoded::to_string(request)?;
 
-        let response = sel
+        let response = self
             .post(BASE_TOKEN_URI)
             .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(body)

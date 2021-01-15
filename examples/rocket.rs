@@ -25,8 +25,7 @@
 extern crate rocket;
 
 use rocket::response::Redirect;
-use serenity_oauth::model::AccessTokenExchangeRequest;
-use serenity_oauth::{DiscordOAuthReqwestRequester, Scope};
+use serenity_oauth::prelude::*;
 use std::env;
 use std::error::Error;
 
