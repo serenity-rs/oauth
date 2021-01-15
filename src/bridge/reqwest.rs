@@ -1,15 +1,16 @@
-//! Bridged support for the `hyper` HTTP client.
-
+//! Bridged support for the `reqwest` HTTP client.
 use crate::constants::BASE_TOKEN_URI;
 use crate::model::{AccessTokenExchangeRequest, AccessTokenResponse, RefreshTokenRequest};
-use crate::Result;
-use hyper::client::{Body, Client as HyperClient};
-use hyper::header::ContentType;
+use crate::{Error, Result};
+use reqwest::blocking::Client as ReqwestClient;
+use reqwest::header::CONTENT_TYPE;
 use serde_json;
+use serde_json::Error as JsonError;
 use serde_urlencoded;
 
+// TODO Update this
 /// A trait used that implements methods for interacting with Discord's OAuth2
-/// API on Hyper's client.
+/// API on Reqwest's client.
 ///
 /// # Examples
 ///
@@ -17,17 +18,14 @@ use serde_urlencoded;
 /// the instance of hyper's Client will have those methods available:
 ///
 /// ```rust,no_run
-/// extern crate hyper;
-/// extern crate serenity_oauth;
-///
 /// # fn main() {
-/// use hyper::Client;
+/// use reqwest::blocking::Client;
 ///
 /// let client = Client::new();
 ///
 /// // At this point, the methods defined by the trait are not in scope. By
 /// // using the trait, they will be.
-/// use serenity_oauth::DiscordOAuthHyperRequester;
+/// use serenity_oauth::DiscordOAuthReqwestRequester;
 ///
 /// // The methods defined by `DiscordOAuthHyperRequester` are now in scope and
 /// // implemented on the instance of hyper's `Client`.
@@ -36,7 +34,7 @@ use serde_urlencoded;
 ///
 /// For examples of how to use the trait with the Client, refer to the trait's
 /// methods.
-pub trait DiscordOAuthHyperRequester {
+pub trait DiscordOAuthReqwestRequester {
     /// Exchanges a code for the user's access token.
     ///
     /// # Examples
@@ -47,9 +45,9 @@ pub trait DiscordOAuthHyperRequester {
     /// # use std::error::Error;
     /// #
     /// # fn try_main() -> Result<(), Box<dyn Error>> {
-    /// use hyper::Client;
+    /// use reqwest::blocking::Client;
     /// use serenity_oauth::model::AccessTokenExchangeRequest;
-    /// use serenity_oauth::DiscordOAuthHyperRequester;
+    /// use serenity_oauth::DiscordOAuthReqwestRequester;
     ///
     /// let request_data = AccessTokenExchangeRequest::new(
     ///     249608697955745802,
@@ -79,13 +77,12 @@ pub trait DiscordOAuthHyperRequester {
     /// Exchange a refresh token:
     ///
     /// ```rust,no_run
-    ///
     /// # use std::error::Error;
     /// #
-    /// # fn try_main() -> Result<(), Box<Error>> {
-    /// use hyper::Client;
+    /// # fn try_main() -> Result<(), Box<dyn Error>> {
+    /// use reqwest::blocking::Client;
     /// use serenity_oauth::model::RefreshTokenRequest;
-    /// use serenity_oauth::DiscordOAuthHyperRequester;
+    /// use serenity_oauth::DiscordOAuthReqwestRequester;
     ///
     /// let request_data = RefreshTokenRequest::new(
     ///     249608697955745802,
@@ -108,27 +105,26 @@ pub trait DiscordOAuthHyperRequester {
     fn exchange_refresh_token(&self, request: &RefreshTokenRequest) -> Result<AccessTokenResponse>;
 }
 
-impl DiscordOAuthHyperRequester for HyperClient {
+impl DiscordOAuthReqwestRequester for ReqwestClient {
     fn exchange_code(&self, request: &AccessTokenExchangeRequest) -> Result<AccessTokenResponse> {
         let body = serde_urlencoded::to_string(request)?;
 
         let response = self
             .post(BASE_TOKEN_URI)
-            .header(ContentType::form_url_encoded())
-            .body(Body::BufBody(body.as_bytes(), body.len()))
+            .header(CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .body(body)
             .send()?;
+        let body = response.text().unwrap();
 
-        serde_json::from_reader(response).map_err(From::from)
+        serde_json::from_str(&*body).map_err(From::from)
     }
 
     fn exchange_refresh_token(&self, request: &RefreshTokenRequest) -> Result<AccessTokenResponse> {
         let body = serde_json::to_string(request)?;
 
-        let response = self
-            .post(BASE_TOKEN_URI)
-            .body(Body::BufBody(body.as_bytes(), body.len()))
-            .send()?;
+        let response = self.post(BASE_TOKEN_URI).body(body).send()?;
+        let body = response.text().unwrap();
 
-        serde_json::from_reader(response).map_err(From::from)
+        serde_json::from_str(&*body).map_err(From::from)
     }
 }

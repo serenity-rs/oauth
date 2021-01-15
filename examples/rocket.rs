@@ -19,21 +19,13 @@
 //! `$ git clone https://github.com/serenity-rs/oauth`
 //! `$ cd oauth`
 //! `$ DISCORD_CLIENT_SECRET=my_secret DISCORD_CLIENT_ID=my_client_id cargo run --example rocket`
+#![feature(decl_macro)]
 
-#![feature(custom_derive, plugin)]
-#![plugin(rocket_codegen)]
-
-extern crate hyper;
-extern crate hyper_native_tls;
-extern crate serenity_oauth;
+#[macro_use]
 extern crate rocket;
 
-use hyper::net::HttpsConnector;
-use hyper::Client as HyperClient;
-use hyper_native_tls::NativeTlsClient;
 use rocket::response::Redirect;
-use serenity_oauth::model::AccessTokenExchangeRequest;
-use serenity_oauth::{DiscordOAuthHyperRequester, Scope};
+use serenity_oauth::prelude::*;
 use std::env;
 use std::error::Error;
 
@@ -50,25 +42,25 @@ fn get_client_id() -> u64 {
 }
 
 fn get_client_secret() -> String {
-    env::var("DISCORD_CLIENT_SECRET")
-        .expect("No DISCORD_CLIENT_SECRET present")
+    env::var("DISCORD_CLIENT_SECRET").expect("No DISCORD_CLIENT_SECRET present")
 }
 
-#[get("/callback?<params>")]
-fn get_callback(params: Params) -> Result<String, Box<Error>> {
+#[get("/callback?<code>")]
+fn get_callback(code: String) -> Result<String, Box<dyn Error>> {
     // Exchange the code for an access token.
-    let ssl = NativeTlsClient::new()?;
-    let connector = HttpsConnector::new(ssl);
-    let client = HyperClient::with_connector(connector);
+    let client = reqwest::blocking::Client::new();
 
     let response = client.exchange_code(&AccessTokenExchangeRequest::new(
         get_client_id(),
         get_client_secret(),
-        params.code,
+        code,
         "http://localhost:8000/callback",
     ))?;
 
-    Ok(format!("The user's access token is: {}", response.access_token))
+    Ok(format!(
+        "The user's access token is: {}",
+        response.access_token
+    ))
 }
 
 #[get("/")]
@@ -82,13 +74,11 @@ fn get_redirect() -> Redirect {
         "http://localhost:8000/callback",
     );
 
-    Redirect::to(&url)
+    Redirect::to(url)
 }
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![
-            get_callback,
-            get_redirect,
-        ]).launch();
+        .mount("/", routes![get_callback, get_redirect,])
+        .launch();
 }

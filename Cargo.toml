@@ -9,6 +9,7 @@ name = "serenity-oauth"
 readme = "README.md"
 repository = "https://github.com/serenity-rs/oauth.git"
 version = "0.1.0"
+edition = "2018"
 
 [dependencies]
 hyper = "~0.10"
@@ -17,10 +18,15 @@ serde = "^1.0"
 serde_derive = "^1.0"
 serde_json = "^1.0"
 serde_urlencoded = "~0.5"
-serenity-model = { git = "https://github.com/serenity-rs/model" }
+reqwest = { version = "~0.11", features = ["tokio-native-tls", "blocking"] }
+async-trait = "^0.1"
+
+[dependencies.serenity]
+version = "0.10.2"
+#default-features = false
+#features = ["tokio"]
 
 [dev-dependencies]
-hyper = "~0.10"
-hyper-native-tls = "~0.2"
-rocket = "~0.3"
-rocket_codegen = "~0.3"
+rocket = "~0.4"
+rocket_codegen = "~0.4"
+reqwest = "~0.11"

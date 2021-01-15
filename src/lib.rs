@@ -23,14 +23,8 @@
 
 #![deny(missing_docs)]
 
-#[macro_use] extern crate serde_derive;
-
-extern crate hyper;
-extern crate percent_encoding;
-extern crate serde;
-extern crate serde_json;
-extern crate serde_urlencoded;
-extern crate serenity_model;
+#[macro_use]
+extern crate serde_derive;
 
 pub mod bridge;
 pub mod constants;
@@ -41,5 +35,14 @@ mod error;
 mod scope;
 
 pub use bridge::hyper::DiscordOAuthHyperRequester;
+pub use bridge::reqwest::DiscordOAuthReqwestRequester;
 pub use error::{Error, Result};
 pub use scope::Scope;
+
+#[allow(missing_docs)]
+pub mod prelude {
+    pub use crate::bridge::hyper::DiscordOAuthHyperRequester;
+    pub use crate::bridge::reqwest::DiscordOAuthReqwestRequester;
+    pub use crate::model::*;
+    pub use crate::scope::Scope;
+}

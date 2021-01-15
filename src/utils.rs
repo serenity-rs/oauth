@@ -3,9 +3,9 @@
 //! This includes functions for easily generating URLs to redirect users to for
 //! authorization.
 
-pub use serenity_model::Permissions;
+pub use serenity::model::prelude::permissions::Permissions;
 
-use constants::BASE_AUTHORIZE_URI;
+use crate::constants::BASE_AUTHORIZE_URI;
 use percent_encoding;
 use super::Scope;
 use std::fmt::Write;
@@ -22,11 +22,9 @@ use std::fmt::Write;
 /// "Send Messages" permissions:
 ///
 /// ```rust
-/// extern crate serenity_model;
-/// extern crate serenity_oauth;
 ///
 /// # fn main() {
-/// use serenity_model::Permissions;
+/// use serenity_oauth::utils::Permissions;
 ///
 /// let client_id = 249608697955745802;
 /// let required = Permissions::ADD_REACTIONS | Permissions::SEND_MESSAGES;

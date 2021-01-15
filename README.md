@@ -24,12 +24,6 @@ Add the following to your `Cargo.toml`:
 serenity-oauth = { git = "https://github.com/serenity-rs/oauth" }
 ```
 
-And then the following to your `main.rs` or `lib.rs`:
-
-```rust
-extern crate serenity_oauth;
-```
-
 ### Examples
 
 For an example of how to use this in a real-world program, see the [`examples`]
